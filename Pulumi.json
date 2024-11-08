@@ -1,0 +1,10 @@
+{
+  "name": "pulumi-fn",
+  "runtime": {
+    "name": "nodejs",
+    "options": {
+      "packagemanager": "yarn"
+    }
+  },
+  "description": "A minimal AWS TypeScript Pulumi program"
+}

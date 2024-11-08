@@ -1,0 +1,17 @@
+{
+    "name": "pulumi-fn",
+    "main": "index.ts",
+    "devDependencies": {
+        "@types/node": "^18",
+        "esbuild": "^0.24.0",
+        "esbuild-plugin-typescript-decorators": "^0.1.0",
+        "fflate": "^0.8.2",
+        "rimraf": "^6.0.1",
+        "typescript": "^5.0.0"
+    },
+    "dependencies": {
+        "@pulumi/aws": "^6.0.0",
+        "@pulumi/awsx": "^2.0.2",
+        "@pulumi/pulumi": "^3.113.0"
+    }
+}
