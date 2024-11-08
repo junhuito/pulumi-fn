@@ -1,5 +1,4 @@
 {
-    "encryptionsalt": "v1:soAB7+XP/8k=:v1:XBvjDDtCJavXVPcl:22ow0efIEF8fmSaDs7ptPRVTjPNqAA==",
     "config": {
         "pulumi-fn:functions": [
             {
