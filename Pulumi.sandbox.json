@@ -1,0 +1,16 @@
+{
+    "encryptionsalt": "v1:soAB7+XP/8k=:v1:XBvjDDtCJavXVPcl:22ow0efIEF8fmSaDs7ptPRVTjPNqAA==",
+    "config": {
+        "pulumi-fn:functions": [
+            {
+                "id": "my-typescript-function",
+                "entry": "src/my-lambda.ts",
+                "name": "my-pulumi-typescript-function",
+                "handler": "index.handler",
+                "environment": {
+                    "LAMBDA_NAME": "my-lambda"
+                }
+            }
+        ]
+    }
+}

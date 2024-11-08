@@ -1,0 +1,72 @@
+name: Pulumi deploy
+on:
+    workflow_call:
+        inputs:
+            environment:
+                required: true
+                type: string
+            ref:
+                required: true
+                type: string
+        secrets:
+            AWS_ACCOUNT_ID:
+                required: true
+            NPM_TOKEN:
+                required: true
+
+env:
+    PULUMI_BUCKET: my-test-pulumi-bucket
+    AWS_ACCOUNT_ID: 361081796204
+    AWS_ENVIRONMENT: sandbox
+    PULUMI_CONFIG_PASSPHRASE: 123456
+
+jobs:
+    pulumi-deploy-to-env:
+        runs-on: ubuntu-latest
+        environment:
+            name: ${{ inputs.environment }}
+        steps:
+            # - name: Map pulumi config passphrase
+            #   run: |
+            #       echo "PULUMI_CONFIG_PASSPHRASE=$(jq -n --arg env ${{ inputs.environment }} --arg sandbox ${{ vars.PULUMI_SANDBOX_STACK_CONFIG_PASSPHRASE }} --arg staging ${{ vars.PULUMI_STAGING_STACK_CONFIG_PASSPHRASE }} --arg production ${{ vars.PULUMI_PRODUCTION_STACK_CONFIG_PASSPHRASE }} '{
+            #           "sandbox": $sandbox,
+            #           "staging": $staging,
+            #           "production-sg": $production
+            #       }[$env]')" >> $GITHUB_ENV
+            
+            - name: Echo PULUMI_CONFIG_PASSPHRASE
+              run: |
+                echo "PASSPHRASE ${{ env.PULUMI_CONFIG_PASSPHRASE }}"
+
+            - name: Checkout Source Code
+              uses: actions/checkout@v4
+              with:
+                  persist-credentials: false
+                  ref: ${{ inputs.ref }}
+
+            - name: Setup nodejs and yarn with token
+              uses: borales/actions-yarn@v4
+              with:
+                cmd: install
+
+            - name: Login to AWS
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+            - name: Yarn build command
+              shell: bash
+              run: yarn build
+
+            - name: Pulumi Provision Service/Resources
+              uses: pulumi/actions@v4
+              with:
+                  command: up
+                  cloud-url: s3://${{ env.PULUMI_BUCKET }}
+                  work-dir: ./
+                  stack-name: organization/pulumi-fn/sandbox
+                  refresh: true
+                  upsert: true
+                  comment-on-pr: true
+                  edit-pr-comment: false

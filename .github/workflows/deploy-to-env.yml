@@ -1,0 +1,28 @@
+name: Deploy to Env
+on:
+    pull_request:
+        types: [labeled]
+
+    workflow_dispatch:
+        inputs:
+            environment:
+                required: true
+                description: Environment to deploy
+                default: sandbox
+                type: environment
+            ref:
+                required: false
+                type: string
+                description: The branch, tag or SHA to git checkout
+
+jobs:
+    pulumi-deploy-to-env:
+        permissions:
+            id-token: write
+            contents: read
+            pull-requests: write
+        uses: ./.github/workflows/pulumi-deploy.yml
+        with:
+            environment: ${{ inputs.environment }}
+            ref: ${{ inputs.ref }}
+        secrets: inherit
