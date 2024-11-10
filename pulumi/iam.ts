@@ -26,7 +26,7 @@ export const provisionIam = (
   const iamRole = new aws.iam.Role(iamConfig.id, {
     name: iamRoleName,
     assumeRolePolicy: pulumi.jsonStringify(iamConfig.assume_role_policy),
-    managedPolicyArns: [...awsManagedPolicyArns, ...customerManagedPolicyArns],
+    // managedPolicyArns: [...awsManagedPolicyArns, ...customerManagedPolicyArns],
     tags: getResourceTags(commonConfig, iamRoleName, ResourceTag.IAM),
   });
 
