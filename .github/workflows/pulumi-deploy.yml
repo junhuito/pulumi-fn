@@ -64,6 +64,15 @@ jobs:
             #   shell: bash
             #   run: yarn build
 
+            - uses: pulumi/actions@v4
+              with:
+                command: preview
+                work-dir: ./pulumi
+                stack-name: organization/pulumi-spike-fn/candidate
+                cloud-url: s3://${{ env.PULUMI_BUCKET }}
+                upsert: true
+                refresh: true
+
             - name: Pulumi Provision Service/Resources
               uses: pulumi/actions@v4
               with:
