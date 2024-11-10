@@ -69,8 +69,8 @@ jobs:
               with:
                   command: up
                   cloud-url: s3://${{ env.PULUMI_BUCKET }}
-                  work-dir: ./
-                  stack-name: organization/pulumi-fn/sandbox
+                  work-dir: ./pulumi
+                  stack-name: organization/pulumi-spike-fn/candidate
                   refresh: true
                   upsert: true
                   comment-on-pr: true
