@@ -8,11 +8,11 @@ on:
             ref:
                 required: true
                 type: string
-        secrets:
-            AWS_ACCOUNT_ID:
-                required: true
-            NPM_TOKEN:
-                required: true
+        # secrets:
+        #     AWS_ACCOUNT_ID:
+        #         required: true
+        #     NPM_TOKEN:
+        #         required: true
 
 env:
     PULUMI_BUCKET: my-test-pulumi-bucket
