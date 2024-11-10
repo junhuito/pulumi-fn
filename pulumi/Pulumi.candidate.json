@@ -1,0 +1,299 @@
+{
+    "config": {
+        "common:config": {
+            "aws": {
+                "aws_account_id": "{{AWS_ACCOUNT_ID}}",
+                "aws_environment": "{{NODE_ENV}}",
+                "aws_region": "{{AWS_REGION}}",
+                "aws_region_abbr": "{{AWS_REGION_ABBR}}",
+                "build_version": "{{BUILD_TAG}}",
+                "lambda_function": {
+                    "alarm": {
+                        "comparison_operator": "GreaterThanThreshold",
+                        "datapoints_to_alarm": 1,
+                        "evaluation_periods": 1,
+                        "health_topic": "arn:aws:sns:{{AWS_REGION}}:{{AWS_ACCOUNT_ID}}:pulumi-cw-logs-alarm-topic",
+                        "metric_name": "Errors",
+                        "namespace": "AWS/Lambda",
+                        "period": 60,
+                        "statistic": "Sum",
+                        "threshold": 0,
+                        "treat_missing_data": "ignore"
+                    },
+                    "architectures": [
+                        "x86_64"
+                    ],
+                    "environment_variables": [
+                        {
+                            "name": "SENTRY_DSN",
+                            "ssm_parameter_name": null,
+                            "value": "https://j8Djz@example.com/4505163005821440"
+                        },
+                        {
+                            "name": "NODE_ENV",
+                            "ssm_parameter_name": null,
+                            "value": "{{NODE_ENV}}"
+                        }
+                    ],
+                    "esbuild": {
+                        "bundle": true,
+                        "minify": true,
+                        "platform": "node",
+                        "sourcemap": false,
+                        "target": "node20"
+                    },
+                    "runtime": "nodejs20.x"
+                },
+                "resource_owner": "dev-team@pulumi.me",
+                "workload_id": "{{WORKLOAD_ID}}"
+            }
+        },
+        "production:config": {
+            "aws": {}
+        },
+        "sandbox:config": {
+            "aws": {
+                "iam": {
+                    "assume_role_policy": {
+                        "Statement": [
+                            {
+                                "Action": "sts:AssumeRole",
+                                "Effect": "Allow",
+                                "Principal": {
+                                    "Service": "lambda.amazonaws.com"
+                                }
+                            }
+                        ],
+                        "Version": "2012-10-17"
+                    },
+                    "aws_managed_policies": [
+                        "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+                        "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+                    ],
+                    "customer_managed_policies": [
+                        {
+                            "policy_name": "pulumi-spike-fn-policy",
+                            "policy_statement": {
+                                "Statement": [
+                                    {
+                                        "Action": [
+                                            "s3:PutObject",
+                                            "s3:PutObjectAcl",
+                                            "s3:GetObject",
+                                            "s3:GetObjectAcl"
+                                        ],
+                                        "Effect": "Allow",
+                                        "Resource": [
+                                            "arn:aws:s3:::pulumi-spike-fn-upload-bucket/*"
+                                        ],
+                                        "Sid": "S3Permissions"
+                                    },
+                                    {
+                                        "Action": [
+                                            "sqs:*"
+                                        ],
+                                        "Effect": "Allow",
+                                        "Resource": [
+                                            "arn:aws:sqs:*:{{AWS_ACCOUNT_ID}}:pulumi-spike-function-queue"
+                                        ],
+                                        "Sid": "SQSPermissions"
+                                    }
+                                ],
+                                "Version": "2012-10-17"
+                            }
+                        }
+                    ],
+                    "id": "pulumi-spike-fn-role",
+                    "name": "pulumi-spike-fn-role"
+                },
+                "lambda_functions": [
+                    {
+                        "description": "pulumi spike function function",
+                        "entry": "src/functions/pulumi-spike-function.ts",
+                        "environment_variables": [
+                            {
+                                "name": "PULUMI_SPIKE_UPLOAD_BUCKET",
+                                "ssm_parameter_name": "/configs/pulumi_ASSETS_BUCKET",
+                                "value": null
+                            },
+                            {
+                                "name": "FILE_SCANNER_ENABLED",
+                                "ssm_parameter_name": null,
+                                "value": "false"
+                            }
+                        ],
+                        "handler": "index.handler",
+                        "id": "pulumi-spike-function",
+                        "memory_size": 128,
+                        "name": "pulumi-spike-function",
+                        "s3_events_notifications": [
+                            {
+                                "bucket_name": "pulumi-spike-fn-upload-bucket",
+                                "notifications": [
+                                    {
+                                        "events": [
+                                            "s3:ObjectCreated:*"
+                                        ],
+                                        "filter_prefix": "candidate",
+                                        "filter_suffix": "pulumi.doc"
+                                    },
+                                    {
+                                        "events": [
+                                            "s3:ObjectCreated:*"
+                                        ],
+                                        "filter_prefix": "candidate",
+                                        "filter_suffix": "pulumi.docx"
+                                    }
+                                ]
+                            }
+                        ],
+                        "sqs": [
+                            {
+                                "content_based_deduplication": false,
+                                "delay_seconds": 0,
+                                "dlq_max_receive_count": 3,
+                                "fifo_queue": false,
+                                "id": "pulumi-spike-function-sqs",
+                                "message_retention_seconds": 345600,
+                                "name": "pulumi-spike-function",
+                                "sns_subscriptions": [
+                                    {
+                                        "filter_policy": {
+                                            "event_type": [
+                                                "pulumi_test_event"
+                                            ]
+                                        },
+                                        "filter_policy_scope": "MessageBody",
+                                        "id": "pulumi-spike-topic-policy-subscription",
+                                        "topic_arn": "arn:aws:sns:{{AWS_REGION}}:{{AWS_ACCOUNT_ID}}:pulumi-spike-topic.fifo"
+                                    },
+                                    {
+                                        "filter_policy": {
+                                            "event_type": [
+                                                "pulumi_test_event_v2"
+                                            ]
+                                        },
+                                        "filter_policy_scope": "MessageBody",
+                                        "id": "pulumi-spike-topic-policy-subscription-v2",
+                                        "topic_arn": "arn:aws:sns:{{AWS_REGION}}:{{AWS_ACCOUNT_ID}}:pulumi-spike-topic-v2.fifo"
+                                    }
+                                ],
+                                "visibility_timeout_seconds": 300
+                            }
+                        ],
+                        "timeout": 300
+                    },
+                    {
+                        "architectures": [
+                            "x86_64"
+                        ],
+                        "description": "pulumi spike function function v2",
+                        "entry": "src/functions/pulumi-spike-function-v2.ts",
+                        "environment_variables": [
+                            {
+                                "name": "PULUMI_SPIKE_UPLOAD_BUCKET",
+                                "ssm_parameter_name": "/configs/pulumi_ASSETS_BUCKET",
+                                "value": null
+                            },
+                            {
+                                "name": "FILE_SCANNER_ENABLED",
+                                "ssm_parameter_name": null,
+                                "value": false
+                            }
+                        ],
+                        "handler": "index.handler",
+                        "id": "pulumi-spike-function-v2",
+                        "memory_size": 128,
+                        "name": "pulumi-spike-function-v2",
+                        "runtime": "nodejs20.x",
+                        "s3_events_notifications": [
+                            {
+                                "bucket_name": "pulumi-spike-fn-upload-bucket",
+                                "notifications": [
+                                    {
+                                        "events": [
+                                            "s3:ObjectCreated:*"
+                                        ],
+                                        "filter_prefix": "candidate",
+                                        "filter_suffix": "pulumi_v2.pdf"
+                                    }
+                                ]
+                            }
+                        ],
+                        "sqs": [],
+                        "timeout": 300
+                    },
+                    {
+                        "architectures": [
+                            "x86_64"
+                        ],
+                        "description": "pulumi spike function function v3",
+                        "entry": "src/functions/pulumi-spike-function-v2.ts",
+                        "environment_variables": [],
+                        "handler": "index.handler",
+                        "id": "pulumi-spike-function-v3",
+                        "memory_size": 128,
+                        "name": "pulumi-spike-function-v3",
+                        "runtime": "nodejs20.x",
+                        "s3_events_notifications": [
+                            {
+                                "bucket_name": "pulumi-spike-fn-upload-bucket",
+                                "notifications": [
+                                    {
+                                        "events": [
+                                            "s3:ObjectCreated:*"
+                                        ],
+                                        "filter_prefix": "candidate",
+                                        "filter_suffix": "pulumi_v3.pdf"
+                                    }
+                                ]
+                            }
+                        ],
+                        "sqs": [],
+                        "timeout": 300
+                    }
+                ],
+                "lambda_log_group": {
+                    "log_retention_days": 0,
+                    "skip_destroy": false
+                },
+                "layers": [
+                    {
+                        "compatible_runtimes": [
+                            "nodejs20.x"
+                        ],
+                        "entry": "pulumi/layers/common",
+                        "id": "pulumi-spike-fn-common-layer",
+                        "name": "pulumi-spike-layer"
+                    }
+                ],
+                "security_group": {
+                    "id": "pulumi-spike-fn-security-group",
+                    "inbound_rules": [],
+                    "name": "pulumi-spike-fn-security-group",
+                    "outbound_rules": [
+                        {
+                            "cidr_blocks": [
+                                "0.0.0.0/0"
+                            ],
+                            "description": "Allow all outbound traffic by default",
+                            "from_port": 0,
+                            "protocol": "-1",
+                            "to_port": 0
+                        }
+                    ]
+                },
+                "step_functions": [
+                    {
+                        "definition": "pulumi/step-functions/employee-program-bulk-report",
+                        "id": "pulumi-spike-fn-state-machine-id",
+                        "name": "pulumi-spike-fn-state-machine"
+                    }
+                ]
+            }
+        },
+        "staging:config": {
+            "aws": {}
+        }
+    }
+}
