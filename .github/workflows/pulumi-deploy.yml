@@ -44,6 +44,10 @@ jobs:
                   persist-credentials: false
                   ref: ${{ inputs.ref }}
 
+            - uses: actions/setup-node@v4
+              with:
+                node-version: 20
+
             - name: Setup nodejs and yarn with token
               uses: borales/actions-yarn@v4
               with:
