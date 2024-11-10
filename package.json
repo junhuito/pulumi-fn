@@ -1,6 +1,5 @@
 {
     "name": "pulumi-fn",
-    "main": "index.ts",
     "devDependencies": {
         "@types/mustache": "^4.2.5",
         "@types/node": "^22.9.0",

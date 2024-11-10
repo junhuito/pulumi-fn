@@ -15,19 +15,21 @@ export const provisionIam = (
 
   const awsManagedPolicyArns = iamConfig.aws_managed_policies;
 
-  const customerManagedPolicyArns =
+  const customerManagedPolicies =
     iamConfig.customer_managed_policies.map((policyConfig) => {
       return new aws.iam.Policy(policyConfig.policy_name, {
         name: `${policyConfig.policy_name}-${commonConfig.aws.aws_region_abbr}`,
         policy: JSON.stringify(policyConfig.policy_statement),
-      }).arn;
+      });
     });
 
   const iamRole = new aws.iam.Role(iamConfig.id, {
     name: iamRoleName,
     assumeRolePolicy: pulumi.jsonStringify(iamConfig.assume_role_policy),
-    managedPolicyArns: [...awsManagedPolicyArns],
+    managedPolicyArns: [...awsManagedPolicyArns, ...customerManagedPolicies.map((policy) => policy.arn)],
     tags: getResourceTags(commonConfig, iamRoleName, ResourceTag.IAM),
+  }, {
+    dependsOn: customerManagedPolicies
   });
 
   return iamRole;
