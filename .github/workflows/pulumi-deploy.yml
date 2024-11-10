@@ -68,7 +68,7 @@ jobs:
               with:
                 command: preview
                 work-dir: ./pulumi
-                stack-name: organization/pulumi-spike-fn/candidate
+                stack-name: organization/pulumi-spike-fn-test/candidatetest
                 cloud-url: s3://${{ env.PULUMI_BUCKET }}
                 upsert: true
                 refresh: true
@@ -79,7 +79,7 @@ jobs:
                   command: up
                   cloud-url: s3://${{ env.PULUMI_BUCKET }}
                   work-dir: ./pulumi
-                  stack-name: organization/pulumi-spike-fn/candidate
+                  stack-name: organization/pulumi-spike-fn-test/candidatetest
                   refresh: true
                   upsert: true
                   comment-on-pr: true

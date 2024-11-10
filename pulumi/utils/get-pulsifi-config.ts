@@ -10,7 +10,7 @@ import {
 
 export const placeholderValues = {
   NODE_ENV: process.env.NODE_ENV ?? 'sandbox',
-  AWS_ACCOUNT_ID: process.env.AWS_ACCOUNT_ID ?? '361081796204', // TODO: for spike purpose, need to remove this default account id
+  AWS_ACCOUNT_ID: process.env.AWS_ACCOUNT_ID ?? '434343955077', // TODO: for spike purpose, need to remove this default account id
   BUILD_TAG: process.env.BUILD_TAG ?? 'latest',
   AWS_REGION: process.env.AWS_REGION ?? 'ap-southeast-1',
   AWS_REGION_ABBR: process.env.AWS_REGION_ABBR ?? 'sg',

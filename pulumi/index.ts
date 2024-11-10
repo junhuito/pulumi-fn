@@ -1,15 +1,15 @@
 import { provisionIam } from "./iam";
 // import { provisionLambdaFunctions } from "./lambda";
-import { getConfigs } from "./utils/get-config";
+// import { getConfigs } from "./utils/get-pulsifi-config";
 // import { provisionSecurityGroup } from "./security-group";
 // import { provisionLayers } from "./layer";
 // import { provisionS3Events } from "./s3";
 // import { provisionStepFunctions } from "./step-function";
 
-const { commonConfigs, environmentConfigs } = getConfigs();
+// const { commonConfigs, environmentConfigs } = getConfigs();
 
 /* IAM */
-const iamRole = provisionIam(commonConfigs, environmentConfigs);
+provisionIam();
 
 // /* SECURITY GROUP */
 // const securityGroup = provisionSecurityGroup(

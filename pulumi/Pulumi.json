@@ -1,4 +1,4 @@
 {
-    "name": "pulumi-spike-fn",
-    "runtime": "nodejs"
+  "name": "pulumi-spike-fn-test",
+  "runtime": "nodejs"
 }

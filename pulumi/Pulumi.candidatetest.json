@@ -12,7 +12,7 @@
                         "comparison_operator": "GreaterThanThreshold",
                         "datapoints_to_alarm": 1,
                         "evaluation_periods": 1,
-                        "health_topic": "arn:aws:sns:{{AWS_REGION}}:{{AWS_ACCOUNT_ID}}:pulumi-cw-logs-alarm-topic",
+                        "health_topic": "arn:aws:sns:{{AWS_REGION}}:{{AWS_ACCOUNT_ID}}:pulsifi-cw-logs-alarm-topic",
                         "metric_name": "Errors",
                         "namespace": "AWS/Lambda",
                         "period": 60,
@@ -44,7 +44,7 @@
                     },
                     "runtime": "nodejs20.x"
                 },
-                "resource_owner": "dev-team@pulumi.me",
+                "resource_owner": "dev-team@pulsifi.me",
                 "workload_id": "{{WORKLOAD_ID}}"
             }
         },
@@ -113,7 +113,7 @@
                         "environment_variables": [
                             {
                                 "name": "PULUMI_SPIKE_UPLOAD_BUCKET",
-                                "ssm_parameter_name": "/configs/pulumi_ASSETS_BUCKET",
+                                "ssm_parameter_name": "/configs/PULSIFI_ASSETS_BUCKET",
                                 "value": null
                             },
                             {
@@ -192,7 +192,7 @@
                         "environment_variables": [
                             {
                                 "name": "PULUMI_SPIKE_UPLOAD_BUCKET",
-                                "ssm_parameter_name": "/configs/pulumi_ASSETS_BUCKET",
+                                "ssm_parameter_name": "/configs/PULSIFI_ASSETS_BUCKET",
                                 "value": null
                             },
                             {
