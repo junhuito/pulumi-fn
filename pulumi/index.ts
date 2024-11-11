@@ -9,7 +9,8 @@ import { provisionIam } from "./iam";
 // const { commonConfigs, environmentConfigs } = getConfigs();
 
 /* IAM */
-provisionIam();
+console.log('Workload info...', process.env.WORKLOAD_INFO)
+// provisionIam();
 
 // /* SECURITY GROUP */
 // const securityGroup = provisionSecurityGroup(

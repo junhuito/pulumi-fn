@@ -78,33 +78,33 @@ jobs:
             - name: Get SSM Parameter
               run: |
                 OUTPUT_VALUE=$(aws ssm get-parameter \
-                  --name "/configs/PULUMI_TEST_PARAM" \
+                  --name "/configs/deployment/sandbox/434343955077-ap-southeast-1" \
                   --with-decryption \
                   --query "Parameter.Value" \
                   --output text)
-                echo "PULUMI_TEST_VALUE=$OUTPUT_VALUE" >> $GITHUB_ENV
+                echo "WORKLOAD_INFO=$OUTPUT_VALUE" >> $GITHUB_ENV
           
             - name: Use the Parameter Value
               run: | 
-                echo "SSM Parameter Value is: $PULUMI_TEST_VALUE"
+                echo "SSM Parameter Value is: $WORKLOAD_INFO"
 
-            # - uses: pulumi/actions@v4
-            #   with:
-            #     command: preview
-            #     work-dir: ./pulumi
-            #     stack-name: organization/pulumi-spike-fn-test/candidatetest
-            #     cloud-url: s3://${{ env.PULUMI_BUCKET }}
-            #     upsert: true
-            #     refresh: true
+            - uses: pulumi/actions@v4
+              with:
+                command: preview
+                work-dir: ./pulumi
+                stack-name: organization/pulumi-spike-fn-test/candidatetest
+                cloud-url: s3://${{ env.PULUMI_BUCKET }}
+                upsert: true
+                refresh: true
 
-            # - name: Pulumi Provision Service/Resources
-            #   uses: pulumi/actions@v4
-            #   with:
-            #       command: up
-            #       cloud-url: s3://${{ env.PULUMI_BUCKET }}
-            #       work-dir: ./pulumi
-            #       stack-name: organization/pulumi-spike-fn-test/candidatetest
-            #       refresh: true
-            #       upsert: true
-            #       comment-on-pr: true
-            #       edit-pr-comment: false
+            - name: Pulumi Provision Service/Resources
+              uses: pulumi/actions@v4
+              with:
+                  command: up
+                  cloud-url: s3://${{ env.PULUMI_BUCKET }}
+                  work-dir: ./pulumi
+                  stack-name: organization/pulumi-spike-fn-test/candidatetest
+                  refresh: true
+                  upsert: true
+                  comment-on-pr: true
+                  edit-pr-comment: false
