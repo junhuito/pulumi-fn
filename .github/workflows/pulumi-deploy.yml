@@ -25,6 +25,9 @@ jobs:
         runs-on: ubuntu-latest
         environment:
             name: ${{ inputs.environment }}
+        permissions:
+          id-token: write
+          contents: read
         steps:
             # - name: Map pulumi config passphrase
             #   run: |
