@@ -1,5 +1,4 @@
 name: Pulumi deploy
-run-name: Deploy to ${{ inputs.environment }} by @${{ github.actor }}
 
 on:
     workflow_call:
@@ -48,6 +47,7 @@ jobs:
 
     deploy:
         needs: pulumi-deploy-to-env
+        name: Deploy to ${{ inputs.environment }} by @${{ github.actor }}
         runs-on: ubuntu-latest
         environment:
             name: ${{ inputs.environment }}
