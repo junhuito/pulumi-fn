@@ -22,7 +22,7 @@ jobs:
         environment:
             name: ${{ inputs.environment }}
         outputs:
-            matrix: ${{ steps.extend.outputs.matrix }}
+            DEPLOYMENT_INFO: ${{ steps.ssm.outputs.DEPLOYMENT_INFO }}
         steps:            
             - name: Login to AWS
               uses: aws-actions/configure-aws-credentials@v4
@@ -39,37 +39,71 @@ jobs:
                   --with-decryption \
                   --query "Parameter.Value" \
                   --output text)
-                echo "DEPLOYMENT_INFO=$SSM_VALUE" >> $GITHUB_OUTPUT
+                # echo "DEPLOYMENT_INFO={\"include\": $SSM_VALUE }" >> $GITHUB_OUTPUT
+
+                {
+                    "include": [
+                        {
+                            "name": "group name",
+                            "items": {
+                                "include": [matrix items]
+                            } ## serialized as string
+                        }
+                    ]
+                }
+
+                ARRAY='[{"account": "account1", "region": "us-east-1"}, {"account": "account2", "region": "us-west-2"}, {"account": "account3", "region": "eu-central-1"}, {"account": "account4", "region": "ap-southeast-1"}]'
+                CHUNK_SIZE=256  # Github matrix limit
+
+                # Parse the JSON array and chunk it in JavaScript
+                node <<EOF > chunks.json
+
+                const format = (batchName, items) => ({
+                    batchName,
+                    items: {
+                        include: items,
+                    },
+                });
+
+                const formats = (chunkedTenants) => ({
+                    include: chunkedTenants.map((chunkedTenant, index) =>
+                        format(`Batch ${++index}`, chunkedTenant)
+                    ),
+                });
+
+                const chunk = (array, chunkSize) => {
+                    const chunks = [];
+                    for (let i = 0; i < array.length; i += chunkSize) {
+                        chunks.push(array.slice(i, i + chunkSize));
+                    }
+                    return chunks;
+                };
+
+                const array = ${ARRAY};
+                const chunkSize = ${CHUNK_SIZE};
+                const chunks = chunk(array, chunkSize);
+                const matrix = formats(chunks);
+
+                console.log(JSON.stringify(matrix));
+                EOF
+
+                # Save chunks to GitHub Actions output
+                echo "DEPLOYMENT_INFO=$(cat chunks.json)" >> $GITHUB_OUTPUT
 
             - name: Log the Parameter Value
               run: | 
                 echo "SSM Parameter Value is: ${{ steps.ssm.outputs.DEPLOYMENT_INFO }}"
 
-            - uses: cloudposse/github-action-matrix-extended@main
-              id: extend
-              with:
-                nested-matrices-count: '1'          
-                matrix: ${{ steps.ssm.outputs.DEPLOYMENT_INFO }}
-
-    # deploy:
-    #     needs: pulumi-deploy-to-env
-    #     uses: ./.github/workflows/matrix-handler.yml
-    #     strategy:
-    #         max-parallel: 1 # This is important to avoid ddos GHA API
-    #         fail-fast: false # Don't fail fast to avoid locking TF State
-    #         matrix: ${{ fromJSON(needs.pulumi-deploy-to-env.outputs.matrix) }}
-    #     name: Group (${{ matrix.name }})
-    #     with:
-    #         items: ${{ matrix.items }}
-
     deploy:
         needs: pulumi-deploy-to-env
+        name: Deploy to ${{ inputs.environment }} by @${{ github.actor }}
+        runs-on: ubuntu-latest
+        environment:
+            name: ${{ inputs.environment }}
         strategy:
-            fail-fast: false # Don't fail fast to avoid locking TF State
-            matrix: ${{ fromJSON(needs.pulumi-deploy-to-env.outputs.matrix) }}
-        name: Do (${{ matrix.arch }})
-        runs-on: self-hosted
+            matrix: ${{ fromJSON(needs.pulumi-deploy-to-env.outputs.DEPLOYMENT_INFO) }}
         steps:
-            - name: Deploy to ${{ matrix.account }} in ${{ matrix.region }}
+            - name: Retrieve Artifact
               run: |
-                echo "Deploying Task Started..."
+                echo "Output account: ${{ matrix.batchName}}"
+                echo "Output region ${{ matrix.items}}"
