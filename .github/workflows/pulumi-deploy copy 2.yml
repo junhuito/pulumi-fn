@@ -22,7 +22,7 @@ jobs:
         environment:
             name: ${{ inputs.environment }}
         outputs:
-            matrix: ${{ steps.extend.outputs.matrix }}
+            DEPLOYMENT_INFO: ${{ steps.ssm.outputs.DEPLOYMENT_INFO }}
         steps:            
             - name: Login to AWS
               uses: aws-actions/configure-aws-credentials@v4
@@ -39,37 +39,22 @@ jobs:
                   --with-decryption \
                   --query "Parameter.Value" \
                   --output text)
-                echo "DEPLOYMENT_INFO=$SSM_VALUE" >> $GITHUB_OUTPUT
+                echo "DEPLOYMENT_INFO={\"include\": $SSM_VALUE }" >> $GITHUB_OUTPUT
 
             - name: Log the Parameter Value
               run: | 
                 echo "SSM Parameter Value is: ${{ steps.ssm.outputs.DEPLOYMENT_INFO }}"
 
-            - uses: cloudposse/github-action-matrix-extended@main
-              id: extend
-              with:
-                nested-matrices-count: '1'          
-                matrix: ${{ steps.ssm.outputs.DEPLOYMENT_INFO }}
-
-    # deploy:
-    #     needs: pulumi-deploy-to-env
-    #     uses: ./.github/workflows/matrix-handler.yml
-    #     strategy:
-    #         max-parallel: 1 # This is important to avoid ddos GHA API
-    #         fail-fast: false # Don't fail fast to avoid locking TF State
-    #         matrix: ${{ fromJSON(needs.pulumi-deploy-to-env.outputs.matrix) }}
-    #     name: Group (${{ matrix.name }})
-    #     with:
-    #         items: ${{ matrix.items }}
-
     deploy:
         needs: pulumi-deploy-to-env
+        name: Deploy to ${{ inputs.environment }} by @${{ github.actor }}
+        runs-on: ubuntu-latest
+        environment:
+            name: ${{ inputs.environment }}
         strategy:
-            fail-fast: false # Don't fail fast to avoid locking TF State
-            matrix: ${{ fromJSON(needs.pulumi-deploy-to-env.outputs.matrix) }}
-        name: Do (${{ matrix.arch }})
-        runs-on: self-hosted
+            matrix: ${{ fromJSON(needs.pulumi-deploy-to-env.outputs.DEPLOYMENT_INFO) }}
         steps:
-            - name: Deploy to ${{ matrix.account }} in ${{ matrix.region }}
+            - name: Retrieve Artifact
               run: |
-                echo "Deploying Task Started..."
+                echo "Output account: ${{ matrix.account}}"
+                echo "Output region ${{ matrix.region}}"
